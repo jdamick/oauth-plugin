@@ -48,6 +48,12 @@ class OauthProviderGenerator < Rails::Generator::Base
       m.template 'controller.rb',File.join('app/controllers',controller_class_path,"#{controller_file_name}_controller.rb")
 
       m.template 'clients_controller.rb',File.join('app/controllers',controller_class_path,"#{controller_file_name}_clients_controller.rb")
+      
+      if options[:engine]
+        m.directory File.join('config')
+        m.template 'routes.rb', File.join('config', 'routes.rb')
+      end
+      
       m.route_name 'oauth', '/oauth',:controller=>'oauth',:action=>'index'
       m.route_name 'authorize', '/oauth/authorize',:controller=>'oauth',:action=>'authorize'
       m.route_name 'request_token', '/oauth/request_token',:controller=>'oauth',:action=>'request_token'
@@ -98,12 +104,26 @@ class OauthProviderGenerator < Rails::Generator::Base
       m.template "authorize.html.#{@template_extension}",  File.join('app/views', controller_class_path, controller_file_name, "authorize.html.#{@template_extension}")
       m.template "authorize_success.html.#{@template_extension}",  File.join('app/views', controller_class_path, controller_file_name, "authorize_success.html.#{@template_extension}")
       m.template "authorize_failure.html.#{@template_extension}",  File.join('app/views', controller_class_path, controller_file_name, "authorize_failure.html.#{@template_extension}")
-      
+
       unless options[:skip_migration]
+        
         m.migration_template 'migration.rb', 'db/migrate', :assigns => {
           :migration_name => "CreateOauthTables"
         }, :migration_file_name => "create_oauth_tables"
       end
+      
+    end
+  end
+  
+  def after_generate
+    super
+    if options[:engine] && defined?(::RAILS_ROOT)
+      FileUtils.cp_r(Dir.glob(destination_path(File.join('db', 'migrate', '*'))), 
+                     File.join(::RAILS_ROOT, 'db', 'migrate'))
+
+      test_type = (options[:test_unit] ? 'test' : 'spec')
+      FileUtils.cp_r(Dir.glob(destination_path(File.join(test_type, '*'))), 
+                     File.join(::RAILS_ROOT, test_type))
     end
   end
 
@@ -121,5 +141,10 @@ class OauthProviderGenerator < Rails::Generator::Base
              "Generate the Test::Unit compatible tests instead of RSpec") { |v| options[:test_unit] = v }
       opt.on("--haml", 
             "Templates use haml") { |v| options[:haml] = v }
+      opt.on("--engine", 
+              "Install as a Rails Engine") do |v| 
+                options[:engine] = v
+                options[:destination] = File.expand_path(File.join(File.dirname(__FILE__), '..', '..'))
+              end
     end
 end

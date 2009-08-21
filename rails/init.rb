@@ -3,5 +3,6 @@ require 'oauth/signature/hmac/sha1'
 require 'oauth/request_proxy/action_controller_request'
 require 'oauth/server'
 require 'oauth/controllers/application_controller_methods'
+require 'oauth/user_relationships'
 
 ActionController::Base.send :include, OAuth::Controllers::ApplicationControllerMethods
