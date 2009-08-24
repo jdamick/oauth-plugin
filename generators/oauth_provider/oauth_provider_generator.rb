@@ -91,6 +91,8 @@ class OauthProviderGenerator < Rails::Generator::Base
         m.template 'controller_test_helper.rb', File.join('test', controller_class_path,"#{controller_file_name}_controller_test_helper.rb")
         m.template 'controller_test.rb',File.join('test/functional',controller_class_path,"#{controller_file_name}_controller_test.rb")
         m.template 'clients_controller_test.rb',File.join('test/functional',controller_class_path,"#{controller_file_name}_clients_controller_test.rb")
+        
+        m.file 'test_helper', 'test', :collision => :force if options[:engine]
       end
       
       
@@ -120,10 +122,6 @@ class OauthProviderGenerator < Rails::Generator::Base
     if options[:engine] && defined?(::RAILS_ROOT)
       FileUtils.cp_r(Dir.glob(destination_path(File.join('db', 'migrate', '*'))), 
                      File.join(::RAILS_ROOT, 'db', 'migrate'))
-
-      test_type = (options[:test_unit] ? 'test' : 'spec')
-      FileUtils.cp_r(Dir.glob(destination_path(File.join(test_type, '*'))), 
-                     File.join(::RAILS_ROOT, test_type))
     end
   end
 
@@ -141,8 +139,7 @@ class OauthProviderGenerator < Rails::Generator::Base
              "Generate the Test::Unit compatible tests instead of RSpec") { |v| options[:test_unit] = v }
       opt.on("--haml", 
             "Templates use haml") { |v| options[:haml] = v }
-      opt.on("--engine", 
-              "Install as a Rails Engine") do |v| 
+      opt.on("--engine", "Install as a Rails Engine") do |v| 
                 options[:engine] = v
                 options[:destination] = File.expand_path(File.join(File.dirname(__FILE__), '..', '..'))
               end
