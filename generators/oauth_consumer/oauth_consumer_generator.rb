@@ -17,6 +17,12 @@ class OauthConsumerGenerator < Rails::Generator::Base
       m.template 'consumer_token.rb',File.join('app/models',"consumer_token.rb")
 
       m.template 'controller.rb',File.join('app/controllers',"oauth_consumers_controller.rb")
+      
+      if options[:engine]
+        m.directory File.join('config')
+        m.template 'routes.rb', File.join('config', 'routes.rb')
+      end
+      
       m.route_entry "map.resources :oauth_consumers,:member=>{:callback=>:get}"
       
       @template_extension= options[:haml] ? "haml" : "erb"
@@ -29,6 +35,17 @@ class OauthConsumerGenerator < Rails::Generator::Base
           :migration_name => "CreateOauthConsumerTokens"
         }, :migration_file_name => "create_oauth_consumer_tokens"
       end
+    end
+  end
+  
+  def after_generate
+    super
+    if options[:engine] && defined?(::RAILS_ROOT)
+      FileUtils.cp_r(Dir.glob(destination_path(File.join('db', 'migrate', '*'))), 
+                     File.join(::RAILS_ROOT, 'db', 'migrate'))
+                     
+      FileUtils.cp_r(Dir.glob(destination_path(File.join('config', 'initializers', '*'))), 
+                     File.join(::RAILS_ROOT, 'config', 'initializers'))
     end
   end
 
@@ -46,5 +63,10 @@ class OauthConsumerGenerator < Rails::Generator::Base
 #             "Generate the Test::Unit compatible tests instead of RSpec") { |v| options[:test_unit] = v }
       opt.on("--haml", 
             "Templates use haml") { |v| options[:haml] = v }
+
+      opt.on("--engine", "Install as a Rails Engine") do |v| 
+                options[:engine] = v
+                options[:destination] = File.expand_path(File.join(File.dirname(__FILE__), '..', '..'))
+              end
     end
 end

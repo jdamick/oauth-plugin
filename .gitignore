@@ -3,3 +3,7 @@ pkg
 *.log
 .DS_Store
 .svn
+app
+config
+db
+test
