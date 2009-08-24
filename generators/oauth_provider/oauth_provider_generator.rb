@@ -51,7 +51,7 @@ class OauthProviderGenerator < Rails::Generator::Base
       
       if options[:engine]
         m.directory File.join('config')
-        m.template 'routes.rb', File.join('config', 'routes.rb')
+        m.template 'routes.rb', File.join('config', 'routes.rb'), :collision => :skip
       end
       
       m.route_name 'oauth', '/oauth',:controller=>'oauth',:action=>'index'

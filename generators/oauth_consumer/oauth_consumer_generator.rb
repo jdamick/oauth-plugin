@@ -20,7 +20,7 @@ class OauthConsumerGenerator < Rails::Generator::Base
       
       if options[:engine]
         m.directory File.join('config')
-        m.template 'routes.rb', File.join('config', 'routes.rb')
+        m.template 'routes.rb', File.join('config', 'routes.rb'), :collision => :skip
       end
       
       m.route_entry "map.resources :oauth_consumers,:member=>{:callback=>:get}"
